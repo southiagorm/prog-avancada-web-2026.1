@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: apibiblioteca
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/biblioteca-db?createDatabaseIfNotExist=true
+    username: root
+    password: thiago
+  jpa:
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+    show-sql: true
+
