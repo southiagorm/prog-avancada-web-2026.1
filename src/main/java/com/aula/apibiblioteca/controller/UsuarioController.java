@@ -1,12 +1,18 @@
 package com.aula.apibiblioteca.controller;
 
+import com.aula.apibiblioteca.dto.UsuarioEmailRequestDto;
+import com.aula.apibiblioteca.dto.UsuarioRequestDto;
+import com.aula.apibiblioteca.dto.UsuarioResponseDto;
 import com.aula.apibiblioteca.model.Usuario;
 import com.aula.apibiblioteca.service.UsuarioService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,31 +25,40 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @GetMapping
-    public ResponseEntity<List<Usuario>> findAll(){
+    public ResponseEntity<List<UsuarioResponseDto>> findAll(){
         return ResponseEntity.ok(usuarioService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> findById(@PathVariable Long id){
+    public ResponseEntity<UsuarioResponseDto> findById(@PathVariable Long id){
         try{
-            Usuario usuario = usuarioService.findById(id);
-            return ResponseEntity.ok(usuario);
+            UsuarioResponseDto usuarioResponseDto = usuarioService.findById(id);
+            return ResponseEntity.ok(usuarioResponseDto);
         }catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> save(@RequestBody Usuario usuario){
-        var userCreated = usuarioService.save(usuario);
+    public ResponseEntity<?> save(@RequestBody @Valid UsuarioRequestDto usuarioRequestDto, BindingResult result){
+
+        if(result.hasErrors()){
+            Map<String, String> erros = new HashMap<>();
+            for(var error : result.getFieldErrors()){
+                erros.put(error.getField(), error.getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(erros);
+        }
+
+        var userCreated = usuarioService.save(usuarioRequestDto);
         return ResponseEntity.status(201).body(userCreated);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> update(@PathVariable Long id, @RequestBody Usuario usuario){
+    public ResponseEntity<UsuarioResponseDto> update(@PathVariable Long id, @RequestBody @Valid UsuarioRequestDto usuarioRequestDto){
         try{
-            Usuario usuarioTemp = usuarioService.update(id, usuario);
-            return ResponseEntity.ok(usuarioTemp);
+            UsuarioResponseDto usuarioResponseDto = usuarioService.update(id, usuarioRequestDto);
+            return ResponseEntity.ok(usuarioResponseDto);
         }catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
         }
@@ -60,11 +75,10 @@ public class UsuarioController {
     }
 
     @PatchMapping("/{id}/update-email")
-    public ResponseEntity<Usuario> updateEmail(@PathVariable Long id, @RequestBody Map<String, String> map){
+    public ResponseEntity<UsuarioResponseDto> updateEmail(@PathVariable Long id, @RequestBody @Valid UsuarioEmailRequestDto emailDto){
         try{
-            System.out.println(map.get("email"));
-            Usuario usuarioTemp = usuarioService.updateEmail(id, map.get("email"));
-            return ResponseEntity.ok(usuarioTemp);
+            UsuarioResponseDto usuarioResponseDto = usuarioService.updateEmail(id, emailDto);
+            return ResponseEntity.ok(usuarioResponseDto);
         }catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
         }

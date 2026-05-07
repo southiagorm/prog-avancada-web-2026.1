@@ -1,11 +1,16 @@
 package com.aula.apibiblioteca.service;
 
+import com.aula.apibiblioteca.dto.UsuarioEmailRequestDto;
+import com.aula.apibiblioteca.dto.UsuarioRequestDto;
+import com.aula.apibiblioteca.dto.UsuarioResponseDto;
+import com.aula.apibiblioteca.mapper.UsuarioMapper;
 import com.aula.apibiblioteca.model.Usuario;
 import com.aula.apibiblioteca.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -15,26 +20,28 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     //Select sem Where
-    public List<Usuario> findAll(){
-        return usuarioRepository.findAll();
+    public List<UsuarioResponseDto> findAll(){
+        return usuarioRepository.findAll().stream().map((u) -> UsuarioMapper.toDto(u)).toList();
     }
 
     //SELECT * FROM WHERE id=?
-    public Usuario findById(Long id){
-        return usuarioRepository.findById(id).orElseThrow(()->new EntityNotFoundException());
+    public UsuarioResponseDto findById(Long id){
+        var usuario = usuarioRepository.findById(id).orElseThrow(()->new EntityNotFoundException());
+        return UsuarioMapper.toDto(usuario);
     }
 
     //Insert
-    public Usuario save(Usuario usuario){
-        return usuarioRepository.save(usuario);
+    public UsuarioResponseDto save(UsuarioRequestDto usuarioRequestDto){
+        var usuario = UsuarioMapper.toEntity(usuarioRequestDto);
+        return UsuarioMapper.toDto(usuarioRepository.save(usuario));
     }
 
     //Update *
-    public Usuario update(Long id, Usuario usuario){
+    public UsuarioResponseDto update(Long id, UsuarioRequestDto usuarioRequestDto){
         Usuario usuarioTemp = usuarioRepository.findById(id).orElseThrow(()->new EntityNotFoundException());
-        usuarioTemp.setNome(usuario.getNome());
-        usuarioTemp.setEmail(usuario.getEmail());
-        return usuarioRepository.save(usuarioTemp);
+        usuarioTemp.setNome(usuarioRequestDto.nome());
+        usuarioTemp.setEmail(usuarioRequestDto.email());
+        return UsuarioMapper.toDto(usuarioRepository.save(usuarioTemp));
     }
 
     //Delete com where
@@ -44,9 +51,9 @@ public class UsuarioService {
     }
 
     //Update do email
-    public Usuario updateEmail(Long id, String email){
+    public UsuarioResponseDto updateEmail(Long id, UsuarioEmailRequestDto emailDto){
         Usuario usuarioTemp = usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException());
-        usuarioTemp.setEmail(email);
-        return usuarioRepository.save(usuarioTemp);
+        usuarioTemp.setEmail(emailDto.email());
+        return UsuarioMapper.toDto(usuarioRepository.save(usuarioTemp));
     }
 }
