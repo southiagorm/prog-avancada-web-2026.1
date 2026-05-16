@@ -8,6 +8,10 @@ import com.aula.apibiblioteca.service.UsuarioService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -25,63 +29,39 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @GetMapping
-    public ResponseEntity<List<UsuarioResponseDto>> findAll(){
-        return ResponseEntity.ok(usuarioService.findAll());
+    public ResponseEntity<Page<UsuarioResponseDto>> findAll(@PageableDefault(size = 10) Pageable pagination){
+
+        return ResponseEntity.ok(usuarioService.findAll(pagination));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponseDto> findById(@PathVariable Long id){
-        try{
-            UsuarioResponseDto usuarioResponseDto = usuarioService.findById(id);
-            return ResponseEntity.ok(usuarioResponseDto);
-        }catch(EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        }
+        UsuarioResponseDto usuarioResponseDto = usuarioService.findById(id);
+        return ResponseEntity.ok(usuarioResponseDto);
     }
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody @Valid UsuarioRequestDto usuarioRequestDto, BindingResult result){
-
-        if(result.hasErrors()){
-            Map<String, String> erros = new HashMap<>();
-            for(var error : result.getFieldErrors()){
-                erros.put(error.getField(), error.getDefaultMessage());
-            }
-            return ResponseEntity.badRequest().body(erros);
-        }
-
+    public ResponseEntity<?> save(@RequestBody @Valid UsuarioRequestDto usuarioRequestDto){
         var userCreated = usuarioService.save(usuarioRequestDto);
         return ResponseEntity.status(201).body(userCreated);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDto> update(@PathVariable Long id, @RequestBody @Valid UsuarioRequestDto usuarioRequestDto){
-        try{
-            UsuarioResponseDto usuarioResponseDto = usuarioService.update(id, usuarioRequestDto);
-            return ResponseEntity.ok(usuarioResponseDto);
-        }catch(EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        }
+        UsuarioResponseDto usuarioResponseDto = usuarioService.update(id, usuarioRequestDto);
+        return ResponseEntity.ok(usuarioResponseDto);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteById(@PathVariable Long id){
-        try{
-            usuarioService.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }catch(EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        }
+        usuarioService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/update-email")
     public ResponseEntity<UsuarioResponseDto> updateEmail(@PathVariable Long id, @RequestBody @Valid UsuarioEmailRequestDto emailDto){
-        try{
-            UsuarioResponseDto usuarioResponseDto = usuarioService.updateEmail(id, emailDto);
-            return ResponseEntity.ok(usuarioResponseDto);
-        }catch(EntityNotFoundException e){
-            return ResponseEntity.notFound().build();
-        }
+        UsuarioResponseDto usuarioResponseDto = usuarioService.updateEmail(id, emailDto);
+        return ResponseEntity.ok(usuarioResponseDto);
     }
 
 }

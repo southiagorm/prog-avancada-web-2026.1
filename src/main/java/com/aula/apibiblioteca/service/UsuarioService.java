@@ -8,6 +8,8 @@ import com.aula.apibiblioteca.model.Usuario;
 import com.aula.apibiblioteca.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,13 +22,13 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     //Select sem Where
-    public List<UsuarioResponseDto> findAll(){
-        return usuarioRepository.findAll().stream().map((u) -> UsuarioMapper.toDto(u)).toList();
+    public Page<UsuarioResponseDto> findAll(Pageable pagination){
+        return usuarioRepository.findAll(pagination).map((u) -> UsuarioMapper.toDto(u));
     }
 
     //SELECT * FROM WHERE id=?
     public UsuarioResponseDto findById(Long id){
-        var usuario = usuarioRepository.findById(id).orElseThrow(()->new EntityNotFoundException());
+        var usuario = usuarioRepository.findById(id).orElseThrow(()->new EntityNotFoundException("Usuário não Encontrado"));
         return UsuarioMapper.toDto(usuario);
     }
 
@@ -38,7 +40,7 @@ public class UsuarioService {
 
     //Update *
     public UsuarioResponseDto update(Long id, UsuarioRequestDto usuarioRequestDto){
-        Usuario usuarioTemp = usuarioRepository.findById(id).orElseThrow(()->new EntityNotFoundException());
+        Usuario usuarioTemp = usuarioRepository.findById(id).orElseThrow(()->new EntityNotFoundException("Usuário não Encontrado"));
         usuarioTemp.setNome(usuarioRequestDto.nome());
         usuarioTemp.setEmail(usuarioRequestDto.email());
         return UsuarioMapper.toDto(usuarioRepository.save(usuarioTemp));
@@ -52,7 +54,7 @@ public class UsuarioService {
 
     //Update do email
     public UsuarioResponseDto updateEmail(Long id, UsuarioEmailRequestDto emailDto){
-        Usuario usuarioTemp = usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException());
+        Usuario usuarioTemp = usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuário não Encontrado"));
         usuarioTemp.setEmail(emailDto.email());
         return UsuarioMapper.toDto(usuarioRepository.save(usuarioTemp));
     }
