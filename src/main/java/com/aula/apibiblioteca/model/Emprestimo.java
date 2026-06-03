@@ -22,9 +22,9 @@ public class Emprestimo {
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
-    @ManyToMany
-    @JoinTable(joinColumns = {@JoinColumn(name = "emprestimo_id"), @JoinColumn(name="emprestimo_id")})
-    private List<Livro> livro = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "livro_id")
+    private Livro livro;
 
     private LocalDateTime dataEmprestimo;
     private LocalDateTime dataDevolucao;
