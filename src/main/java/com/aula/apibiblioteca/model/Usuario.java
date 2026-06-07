@@ -1,5 +1,6 @@
 package com.aula.apibiblioteca.model;
 
+import com.aula.apibiblioteca.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,4 +20,9 @@ public class Usuario {
     private String nome;
     @Column(length = 255)
     private String email;
+    @Column(length = 255, nullable = false)
+    private String senha;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role regra;
 }

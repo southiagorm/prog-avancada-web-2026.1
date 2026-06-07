@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -62,6 +63,11 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponseDto> updateEmail(@PathVariable Long id, @RequestBody @Valid UsuarioEmailRequestDto emailDto){
         UsuarioResponseDto usuarioResponseDto = usuarioService.updateEmail(id, emailDto);
         return ResponseEntity.ok(usuarioResponseDto);
+    }
+
+    @PostMapping("/cadastrar")
+    public ResponseEntity<UsuarioResponseDto> cadastrar(@RequestBody @Valid UsuarioRequestDto usuarioRequestDto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.cadastrar(usuarioRequestDto));
     }
 
 }

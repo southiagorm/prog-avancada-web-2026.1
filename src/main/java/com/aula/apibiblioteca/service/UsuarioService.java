@@ -3,6 +3,7 @@ package com.aula.apibiblioteca.service;
 import com.aula.apibiblioteca.dto.UsuarioEmailRequestDto;
 import com.aula.apibiblioteca.dto.UsuarioRequestDto;
 import com.aula.apibiblioteca.dto.UsuarioResponseDto;
+import com.aula.apibiblioteca.enums.Role;
 import com.aula.apibiblioteca.mapper.UsuarioMapper;
 import com.aula.apibiblioteca.model.Usuario;
 import com.aula.apibiblioteca.repository.UsuarioRepository;
@@ -10,7 +11,9 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,8 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     //Select sem Where
     public Page<UsuarioResponseDto> findAll(Pageable pagination){
@@ -57,5 +62,22 @@ public class UsuarioService {
         Usuario usuarioTemp = usuarioRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuário não Encontrado"));
         usuarioTemp.setEmail(emailDto.email());
         return UsuarioMapper.toDto(usuarioRepository.save(usuarioTemp));
+    }
+
+    @Transactional
+    public UsuarioResponseDto cadastrar(UsuarioRequestDto usuarioRequestDto){
+        if(usuarioRepository.existsByEmail(usuarioRequestDto.email())){
+            throw new RuntimeException("Email já existe: " + usuarioRequestDto.email());
+        }
+
+        var passwordEncrypted = passwordEncoder.encode(usuarioRequestDto.senha());
+
+        var usuario = new Usuario();
+        usuario.setNome(usuarioRequestDto.nome());
+        usuario.setEmail(usuarioRequestDto.email());
+        usuario.setRegra(Role.valueOf(usuarioRequestDto.regra()));
+        usuario.setSenha(passwordEncrypted);
+
+        return UsuarioMapper.toDto(usuarioRepository.save(usuario));
     }
 }
