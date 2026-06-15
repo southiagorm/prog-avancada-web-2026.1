@@ -1,9 +1,11 @@
 package com.aula.apibiblioteca.service;
 
+import com.aula.apibiblioteca.dto.AuthResponseDto;
 import com.aula.apibiblioteca.dto.UsuarioEmailRequestDto;
 import com.aula.apibiblioteca.dto.UsuarioRequestDto;
 import com.aula.apibiblioteca.dto.UsuarioResponseDto;
 import com.aula.apibiblioteca.enums.Role;
+import com.aula.apibiblioteca.exception.EmailExisteException;
 import com.aula.apibiblioteca.mapper.UsuarioMapper;
 import com.aula.apibiblioteca.model.Usuario;
 import com.aula.apibiblioteca.repository.UsuarioRepository;
@@ -15,9 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Service
 public class UsuarioService {
 
@@ -25,6 +24,8 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtService jwtService;
 
     //Select sem Where
     public Page<UsuarioResponseDto> findAll(Pageable pagination){
@@ -65,9 +66,9 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponseDto cadastrar(UsuarioRequestDto usuarioRequestDto){
+    public AuthResponseDto cadastrar(UsuarioRequestDto usuarioRequestDto){
         if(usuarioRepository.existsByEmail(usuarioRequestDto.email())){
-            throw new RuntimeException("Email já existe: " + usuarioRequestDto.email());
+            throw new EmailExisteException(usuarioRequestDto.email());
         }
 
         var passwordEncrypted = passwordEncoder.encode(usuarioRequestDto.senha());
@@ -78,6 +79,16 @@ public class UsuarioService {
         usuario.setRegra(Role.valueOf(usuarioRequestDto.regra()));
         usuario.setSenha(passwordEncrypted);
 
-        return UsuarioMapper.toDto(usuarioRepository.save(usuario));
+        var usuarioSalvo = usuarioRepository.save(usuario);
+        String token = jwtService.generateToken(usuario);
+
+        return AuthResponseDto.builder()
+                .id(usuarioSalvo.getId())
+                .nome(usuarioSalvo.getNome())
+                .email(usuarioSalvo.getEmail())
+                .role(usuarioSalvo.getRegra().toString())
+                .token(token)
+                .build();
+
     }
 }

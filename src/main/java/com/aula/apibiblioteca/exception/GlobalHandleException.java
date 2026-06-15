@@ -40,4 +40,13 @@ public class GlobalHandleException {
                 LocalDateTime.now()
         ));
     }
+
+    @ExceptionHandler(EmailExisteException.class)
+    public ResponseEntity<ExceptionResponseDto> handleEmailExisteException(EmailExisteException ex){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                new ExceptionResponseDto(
+                        HttpStatus.CONFLICT.toString(),
+                        Map.of("message", ex.getMessage()),
+                        LocalDateTime.now()));
+    }
 }

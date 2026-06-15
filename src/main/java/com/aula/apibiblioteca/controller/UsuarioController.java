@@ -3,23 +3,16 @@ package com.aula.apibiblioteca.controller;
 import com.aula.apibiblioteca.dto.UsuarioEmailRequestDto;
 import com.aula.apibiblioteca.dto.UsuarioRequestDto;
 import com.aula.apibiblioteca.dto.UsuarioResponseDto;
-import com.aula.apibiblioteca.model.Usuario;
 import com.aula.apibiblioteca.service.UsuarioService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 //http://localhost:8080/usuarios
@@ -64,10 +57,4 @@ public class UsuarioController {
         UsuarioResponseDto usuarioResponseDto = usuarioService.updateEmail(id, emailDto);
         return ResponseEntity.ok(usuarioResponseDto);
     }
-
-    @PostMapping("/cadastrar")
-    public ResponseEntity<UsuarioResponseDto> cadastrar(@RequestBody @Valid UsuarioRequestDto usuarioRequestDto){
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.cadastrar(usuarioRequestDto));
-    }
-
 }
